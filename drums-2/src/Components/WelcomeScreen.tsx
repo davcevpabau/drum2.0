@@ -1,187 +1,235 @@
-import { motion } from "framer-motion";
-import { Music, ArrowRight, AudioLines, Zap, Share2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Play,
+  Music,
+  Library,
+  Headphones,
+  Settings,
+  Download,
+} from "lucide-react";
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
 }
 
 const WelcomeScreen = ({ onGetStarted }: WelcomeScreenProps) => {
-  // Animation variants
-  const containerVariants = {
+  const [currentFeature, setCurrentFeature] = useState(0);
+  const [startAnimation, setStartAnimation] = useState(false);
+
+  useEffect(() => {
+    // Start the animation sequence after component mounts
+    const timer = setTimeout(() => {
+      setStartAnimation(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (startAnimation) {
+      // Auto-advance through features
+      const interval = setInterval(() => {
+        setCurrentFeature((prev) => {
+          // When we've shown all features, trigger the onGetStarted
+          if (prev >= features.length - 1) {
+            clearInterval(interval);
+            setTimeout(onGetStarted, 1000);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [startAnimation, onGetStarted]);
+
+  const features = [
+    {
+      icon: <Music size={36} className="text-pink-500" />,
+      title: "Professional Beats",
+      description:
+        "Create studio-quality drum patterns with our premium sound library",
+      color: "from-pink-500 to-purple-600",
+    },
+    {
+      icon: <Library size={36} className="text-blue-500" />,
+      title: "Sample Library",
+      description: "Access thousands of high-quality drum samples and loops",
+      color: "from-blue-500 to-indigo-600",
+    },
+    {
+      icon: <Headphones size={36} className="text-green-500" />,
+      title: "Live Mixing",
+      description:
+        "Mix and adjust your beats in real-time with professional tools",
+      color: "from-green-500 to-teal-600",
+    },
+    {
+      icon: <Download size={36} className="text-amber-500" />,
+      title: "Export & Share",
+      description:
+        "Export your beats in multiple formats or share with one click",
+      color: "from-amber-500 to-orange-600",
+    },
+    {
+      icon: <Settings size={36} className="text-violet-500" />,
+      title: "Customization",
+      description: "Personalize your workflow with custom layouts and settings",
+      color: "from-violet-500 to-purple-600",
+    },
+  ];
+
+  const mainVariants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        delayChildren: 0.3,
+        duration: 1.5,
         staggerChildren: 0.2,
+      },
+    },
+    exit: {
+      opacity: 0,
+      transition: {
+        duration: 0.5,
+        when: "afterChildren",
       },
     },
   };
 
-  const itemVariants = {
+  const logoVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: {
+      scale: 1,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20,
+      },
+    },
+  };
+
+  const titleVariants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
       opacity: 1,
       transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 24,
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { y: 40, opacity: 0 },
-    visible: (i) => ({
-      y: 0,
-      opacity: 1,
-      transition: {
-        delay: i * 0.15 + 0.8,
+        delay: 0.3,
         duration: 0.8,
         ease: [0.22, 1, 0.36, 1],
       },
-    }),
+    },
   };
 
-  const features = [
-    {
-      icon: <AudioLines size={24} className="text-blue-400" />,
-      title: "Premium Sound Library",
-      description:
-        "Access our extensive collection of high-quality drum samples created by professional producers.",
+  const featureVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.8,
+        ease: [0.22, 1, 0.36, 1],
+      },
     },
-    {
-      icon: <Zap size={24} className="text-blue-400" />,
-      title: "Intuitive Interface",
-      description:
-        "Our sleek, responsive design makes creating beats effortless on any device.",
+    exit: {
+      opacity: 0,
+      y: -30,
+      transition: {
+        duration: 0.5,
+        ease: [0.22, 1, 0.36, 1],
+      },
     },
-    {
-      icon: <Share2 size={24} className="text-blue-400" />,
-      title: "Share Your Creations",
-      description:
-        "Export and share your beats directly to social media or your DAW.",
+  };
+
+  const progressVariants = {
+    hidden: { width: "0%" },
+    visible: {
+      width: "100%",
+      transition: {
+        duration: 1.8,
+        ease: "linear",
+      },
     },
-  ];
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-black overflow-hidden">
-      <div className="flex-1 flex flex-col items-center justify-center p-6 text-center relative">
-        {/* Animated background elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(20)].map((_, i) => (
-            <motion.div
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                background: `radial-gradient(circle at center, rgba(59, 130, 246, ${
-                  Math.random() * 0.3 + 0.1
-                }) 0%, transparent 70%)`,
-                width: `${Math.random() * 300 + 100}px`,
-                height: `${Math.random() * 300 + 100}px`,
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                transform: `translate(-50%, -50%)`,
-              }}
-              animate={{
-                x: [Math.random() * 40 - 20, Math.random() * 40 - 20],
-                y: [Math.random() * 40 - 20, Math.random() * 40 - 20],
-                opacity: [0.7, 0.3, 0.7],
-              }}
-              transition={{
-                duration: Math.random() * 10 + 10,
-                repeat: Infinity,
-                repeatType: "reverse",
-                ease: "easeInOut",
-              }}
-            />
-          ))}
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white p-6 overflow-hidden">
+      <motion.div
+        className="relative max-w-md w-full mx-auto text-center"
+        variants={mainVariants}
+        initial="hidden"
+        animate={startAnimation ? "visible" : "hidden"}
+        exit="exit"
+      >
+        {/* Logo */}
+        <motion.div variants={logoVariants} className="mb-6">
+          <div className="h-20 w-20 mx-auto rounded-2xl bg-gradient-to-br from-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-500/30">
+            <Play size={40} className="text-white ml-1" />
+          </div>
+        </motion.div>
+
+        {/* App Title */}
+        <motion.div variants={titleVariants}>
+          <h1 className="text-4xl font-bold mb-1 tracking-tight">RhythmKit</h1>
+          <p className="text-lg text-gray-400 mb-12">
+            Your premium beat production studio
+          </p>
+        </motion.div>
+
+        {/* Feature Showcase */}
+        <div className="h-64 relative">
+          <AnimatePresence mode="wait">
+            {startAnimation && (
+              <motion.div
+                key={currentFeature}
+                className="absolute inset-0 flex flex-col items-center justify-center"
+                variants={featureVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                <div
+                  className={`h-16 w-16 rounded-full bg-gradient-to-br ${features[currentFeature].color} flex items-center justify-center mb-4 shadow-lg`}
+                >
+                  {features[currentFeature].icon}
+                </div>
+                <h2 className="text-2xl font-semibold mb-2">
+                  {features[currentFeature].title}
+                </h2>
+                <p className="text-gray-400 max-w-xs text-center">
+                  {features[currentFeature].description}
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="relative z-10 max-w-2xl mx-auto"
-        >
-          {/* Logo */}
-          <motion.div
-            className="mb-6 flex justify-center items-center"
-            variants={itemVariants}
-          >
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center shadow-xl shadow-blue-600/30">
-              <Music size={32} className="text-white" />
-            </div>
-          </motion.div>
-
-          {/* Title */}
-          <motion.h1
-            className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400 text-transparent bg-clip-text"
-            variants={itemVariants}
-          >
-            RhythmKit
-          </motion.h1>
-
-          {/* Subtitle */}
-          <motion.div variants={itemVariants}>
-            <p className="text-xl md:text-2xl text-blue-50 font-light mb-2">
-              Create. Produce. Innovate.
-            </p>
-            <p className="text-gray-300 mb-8 max-w-lg mx-auto">
-              Unleash your creativity with our professional-grade drum machine.
-              Perfect for producers, beatmakers, and music enthusiasts.
-            </p>
-          </motion.div>
-
-          {/* Button */}
-          <motion.button
-            onClick={onGetStarted}
-            className="bg-gradient-to-r from-blue-600 to-blue-400 hover:from-blue-500 hover:to-blue-300 text-white text-lg font-medium py-4 px-8 rounded-xl flex items-center mx-auto shadow-lg shadow-blue-600/20"
-            whileHover={{
-              scale: 1.05,
-              boxShadow: "0 15px 25px -4px rgba(59, 130, 246, 0.3)",
-            }}
-            whileTap={{ scale: 0.98 }}
-            variants={itemVariants}
-          >
-            Get Started
-            <ArrowRight size={20} className="ml-2" />
-          </motion.button>
-        </motion.div>
-
-        {/* Features */}
-        <motion.div
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-20 relative z-10 max-w-6xl w-full"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {features.map((feature, i) => (
-            <motion.div
+        {/* Progress Indicators */}
+        <div className="flex justify-center mt-8 space-x-2">
+          {features.map((_, i) => (
+            <div
               key={i}
-              custom={i}
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              className="backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl p-6 hover:border-blue-500/30 transition-all duration-300"
-              whileHover={{
-                y: -5,
-                boxShadow: "0 15px 30px -10px rgba(0, 0, 0, 0.3)",
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
-              }}
+              className="relative h-1 w-12 bg-gray-800 rounded-full overflow-hidden"
             >
-              <div className="h-12 w-12 rounded-full bg-blue-900/30 flex items-center justify-center mb-4">
-                {feature.icon}
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-white">
-                {feature.title}
-              </h3>
-              <p className="text-gray-400">{feature.description}</p>
-            </motion.div>
+              {i === currentFeature && (
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                  variants={progressVariants}
+                  initial="hidden"
+                  animate="visible"
+                />
+              )}
+              {i < currentFeature && (
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
+              )}
+            </div>
           ))}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 };
